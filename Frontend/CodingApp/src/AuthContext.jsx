@@ -7,6 +7,13 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check token existence in localStorage
+    /* bcoz
+     When You Restart or Reload Your App:
+The entire React component tree is remounted.
+
+That includes the <AuthProvider>, so its useEffect runs once at that moment.
+
+It checks localStorage for a token and updates isLoggedIn accordingly. */
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token); // true if token exists
   }, []);
@@ -19,8 +26,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
-      {children}
+    //here children means ur entire app
+    <AuthContext.Provider value={{ isLoggedIn, login, logout }}> 
+      {children} 
     </AuthContext.Provider>
   );
 };
