@@ -4,12 +4,6 @@ Coding Meets Rewards
 
 ---
 
-## 🚧 Project Status: In Progress
-
-This project is currently under active development. Many features and improvements are planned and will be added in future updates. Stay tuned!
-
----
-
 ## 🌟 Current Features
 
 - **Real-Time Coding Contests**  
