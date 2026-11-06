@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar"; // Adjust path if needed
+import Navbar from "../components/Navbar"; 
 import Footer from "./Footer";
+import { useAuth } from "../AuthContext";
 
 const Profile = () => {
   const [contests, setContests] = useState([]);
@@ -23,17 +24,17 @@ const Profile = () => {
   const [updateSuccess, setUpdateSuccess] = useState("");
 
   const navigate = useNavigate();
-
-  // Get user from localStorage
-  const user = JSON.parse(localStorage.getItem("user"));
+  const { user } = useAuth(); // Get user from AuthContext
 
   // Fetch contests
   useEffect(() => {
+    if (!user?.id && !user?.id) return;
+
     const fetchContests = async () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:5000/api/users/${user.id}/contests`
+          `http://localhost:5000/api/users/${user.id || user._id}/contests`
         );
         setContests(response.data.contests);
       } catch (err) {
@@ -44,14 +45,17 @@ const Profile = () => {
     };
 
     fetchContests();
-  }, [user.id]);
+  }, [user]);
 
   // Fetch user info
   useEffect(() => {
+    if (!user?.id && !user?._id) return;
+
     const fetchUser = async () => {
       try {
         setLoadingUser(true);
-        const res = await axios.get(`http://localhost:5000/api/users/${user.id}`);
+        const userId = user.id || user._id;
+        const res = await axios.get(`http://localhost:5000/api/users/${userId}`);
         setUserInfo(res.data);
         setUpdateData({
           name: res.data.name || "",
@@ -68,7 +72,8 @@ const Profile = () => {
     };
 
     fetchUser();
-  }, [user.id]);
+  }, [user]);
+
 
   const handleUpdateChange = (e) => {
     setUpdateData({ ...updateData, [e.target.name]: e.target.value });

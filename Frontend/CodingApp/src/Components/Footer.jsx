@@ -41,7 +41,7 @@ const Footer = () => {
 
         {/* Copyright */}
         <div className="mt-6 text-gray-500 text-sm">
-          © 2025 VinCode by Dhanush P Shetty. All rights reserved.
+          © 2026 VinCode | All rights reserved
         </div>
       </div>
     </footer>

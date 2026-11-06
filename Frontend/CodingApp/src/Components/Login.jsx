@@ -29,20 +29,21 @@ const Login = () => {
     setLoading(true);
     setMessage({ text: "", type: "" });
     
-
     try {
+      // Make sure this matches your backend route prefix (e.g., /api/users/login or /api/login)
       const res = await axios.post("http://localhost:5000/api/login", formData);
 
       if (res.data.success) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
-        login(); // update global auth state
+        
+        login(res.data.user); // 👈 Pass user data here so AuthContext saves it!
 
         setMessage({ text: "Login successful!", type: "success" });
 
         setTimeout(() => {
-          navigate("/"); // 👈 Redirect to homepage
-        }, 1000); // optional delay to show success message
+          navigate("/"); 
+        }, 1000);
       } else {
         setMessage({ text: res.data.message || "Login failed", type: "error" });
       }

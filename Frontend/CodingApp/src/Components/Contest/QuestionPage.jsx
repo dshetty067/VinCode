@@ -1,23 +1,22 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import MonacoEditor from '@monaco-editor/react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar';
-import { useSearchParams } from "react-router-dom";
-import { useNavigate } from 'react-router-dom';
 
 const QuestionPage = () => {
-  const { id } = useParams(); // assume URL like /question/:id
+  const { id } = useParams();
   const [searchParams] = useSearchParams();
   const [question, setQuestion] = useState(null);
   const [code, setCode] = useState('');
-  const [language, setLanguage] = useState('python'); // or your default
+  const [language, setLanguage] = useState('python');
   const [message, setMessage] = useState('');
   const contestId = searchParams.get("contestId");
   const user = JSON.parse(localStorage.getItem("user"));
-  const token = localStorage.getItem("token");
   const navigate = useNavigate();
   
+  const userId = user?.id || user?._id;
+
   useEffect(() => {
     axios.get(`http://localhost:5000/qn/questions/${id}`)
       .then(res => setQuestion(res.data.question))
@@ -25,51 +24,48 @@ const QuestionPage = () => {
   }, [id]);
 
   const handleSubmit = async () => {
-    
     try {
       const response = await axios.post('http://localhost:5000/sub/submit-code', {
-        user: user.id,             // dynamically use logged in user id
-        contest: contestId,  // Replace with actual contest ID or pass as prop/query param
+        user: userId,
+        contest: contestId,
         question: id,
         code,
         language
       });
 
-      setMessage(response.data.message);
+      setMessage(response.data.message || 'Submission successful!');
+
+      // Redirect back to contest questions list after 1.5 seconds so "Solved" updates
+      setTimeout(() => {
+        navigate(`/contest/${contestId}/questions`);
+      }, 1500);
     } catch (error) {
       setMessage(error.response?.data?.message || 'Error submitting code.');
     }
   };
 
+  const handleFinishContest = async () => {
+    try {
+      setMessage('Processing submissions...');
+      
+      await axios.post(`http://localhost:5000/judge/judge-submissions/${contestId}/${userId}`);
+      await axios.post(`http://localhost:5000/cont/mark-complete`, {
+        contestId,
+        userId: userId,
+      });
+      
+      setMessage('Contest finished successfully. Redirecting...');
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+    } catch (err) {
+      console.error("Error finishing contest:", err);
+      setMessage('Failed to finish contest.');
+    }
+  };
+
   if (!question) 
     return <div className="text-center mt-20 text-blue-800 font-semibold">Loading question...</div>;
-
- const handleFinishContest = async () => {
-  try {
-    setMessage('Processing submissions...');
-    
-    const response = await axios.post(
-      `http://localhost:5000/judge/judge-submissions/${contestId}/${user.id}`
-    );
-
-    console.log("Judging Complete:", response.data);
-    await axios.post(`http://localhost:5000/cont/mark-complete`, {
-      contestId,
-      userId: user.id,
-    });
-    setMessage('Code submitted successfully. Redirecting to homepage...');
-    
-
-
-    // Wait 2 seconds before redirecting
-    setTimeout(() => {
-      navigate('/');
-    }, 2000);
-  } catch (err) {
-    console.error("Error finishing contest:", err);
-    setMessage('Failed to finish contest.');
-  }
-};
 
   return (
     <>
@@ -97,7 +93,7 @@ const QuestionPage = () => {
           )}
 
           <div className="text-sm text-blue-700 font-medium">
-            Difficulty: <span className={`font-bold ${question.difficulty === 'Hard' ? 'text-red-600' : question.difficulty === 'Medium' ? 'text-yellow-600' : 'text-green-600'}`}>{question.difficulty}</span>
+            Difficulty: <span className={`font-bold ${question.difficulty === 'hard' ? 'text-red-600' : question.difficulty === 'medium' ? 'text-yellow-600' : 'text-green-600'}`}>{question.difficulty}</span>
           </div>
         </div>
 
@@ -122,7 +118,6 @@ const QuestionPage = () => {
               <option value="cpp">C++</option>
               <option value="c">C</option>
               <option value="java">Java</option>
-              {/* Add more as needed */}
             </select>
             <button
               onClick={handleSubmit}
@@ -130,9 +125,9 @@ const QuestionPage = () => {
             >
               Submit Code
             </button>
-          <Link to={`/contest/${contestId}/questions`} className='bg-blue-800 text-white px-6 py-2 rounded hover:bg-blue-700 transition'>Back</Link>
+            <Link to={`/contest/${contestId}/questions`} className='bg-blue-800 text-white px-6 py-2 rounded hover:bg-blue-700 transition'>Back</Link>
           </div>
-           <button
+          <button
             onClick={handleFinishContest}
             className="mt-5 bg-green-700 text-white px-6 py-2 rounded hover:bg-green-600 transition"
           >

@@ -55,6 +55,18 @@ router.get('/contests/active', async (req, res) => {
   }
 });
 
+// Get all completed contests (endTime <= now)
+router.get('/contests/completed', async (req, res) => {
+  try {
+    const now = new Date();
+    const completedContests = await Contest.find({ endTime: { $lte: now } });
+
+    res.status(200).json({ success: true, contests: completedContests });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // Get contest by ID with selected fields and computed values
 router.get('/contests/:contestId', async (req, res) => {
   try {
@@ -135,61 +147,83 @@ router.delete('/contests/:id', async (req, res) => {
 });
 
 // Register user to contest after Razorpay payment & wallet balance verification
+
 router.post('/contests/:contestId/register', async (req, res) => {
   const { contestId } = req.params;
   const { userId } = req.body;
 
   try {
     const contest = await Contest.findById(contestId);
+
     if (!contest) {
-      return res.status(404).json({ success: false, message: 'Contest not found' });
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    // Already registered check
-    if (contest.participants.includes(userId)) {
-      return res.status(400).json({ success: false, message: 'User already registered for this contest' });
-    }
-
-    // Contest full check
-    if (contest.participants.length >= contest.maxParticipants) {
-      return res.status(400).json({ success: false, message: 'Contest is full' });
-    }
-
-    // Wallet balance check
-    if (user.walletBalance < contest.entryFee) {
-      return res.status(400).json({
+      return res.status(404).json({
         success: false,
-        message: 'Insufficient wallet balance. Please top up your wallet.'
+        message: 'Contest not found'
       });
     }
 
-    // Deduct entry fee from wallet
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if already registered
+    if (contest.participants.some(
+      id => id.toString() === userId
+    )) {
+      return res.status(400).json({
+        success: false,
+        message: 'You are already registered for this contest.'
+      });
+    }
+
+    // Check contest capacity
+    if (contest.participants.length >= contest.maxParticipants) {
+      return res.status(400).json({
+        success: false,
+        message: 'Contest is full.'
+      });
+    }
+
+    // Check wallet balance
+    if (user.walletBalance < contest.entryFee) {
+      return res.status(400).json({
+        success: false,
+        message: 'Insufficient wallet balance. Please add money to your wallet.'
+      });
+    }
+
+    // Deduct entry fee
     user.walletBalance -= contest.entryFee;
 
-    // Register user to contest
-    contest.participants.push(userId);
+    // Register user
+    contest.participants.push(user._id);
     contest.prizePool += contest.entryFee;
-
-    user.contestsRegistered.push(contestId);
+    user.contestsRegistered.push(contest._id);
 
     await user.save();
     await contest.save();
 
     return res.status(200).json({
       success: true,
-      message: 'User successfully registered to the contest',
-      contest
+      message: 'Successfully registered for the contest.',
+      newBalance: user.walletBalance
     });
 
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    console.error("Contest registration error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 });
+
 
 // Add question to a contest
 router.post('/contests/:contestId/questions', async (req, res) => {
@@ -256,5 +290,7 @@ router.post('/mark-complete', async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
+
+
 
 module.exports = router;

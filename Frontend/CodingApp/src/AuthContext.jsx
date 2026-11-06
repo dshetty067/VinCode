@@ -4,34 +4,43 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Check token existence in localStorage
-    /* bcoz
-     When You Restart or Reload Your App:
-The entire React component tree is remounted.
-
-That includes the <AuthProvider>, so its useEffect runs once at that moment.
-
-It checks localStorage for a token and updates isLoggedIn accordingly. */
     const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token); // true if token exists
+    const storedUser = localStorage.getItem("user");
+    
+    if (token) {
+      setIsLoggedIn(true);
+    }
+    if (storedUser && storedUser !== "undefined" && storedUser !== "null") {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (err) {
+        console.error("Failed to parse user from localStorage", err);
+        localStorage.removeItem("user");
+      }
+    }
   }, []);
 
-  const login = () => setIsLoggedIn(true);
+  const login = (userData) => {
+    setIsLoggedIn(true);
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setIsLoggedIn(false);
+    setUser(null);
   };
 
   return (
-    //here children means ur entire app
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}> 
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}> 
       {children} 
     </AuthContext.Provider>
   );
 };
 
-// Hook to use auth
 export const useAuth = () => useContext(AuthContext);

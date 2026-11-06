@@ -9,7 +9,7 @@ const Contests = () => {
   const [contests, setContests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
 
   useEffect(() => {
     const fetchContests = async () => {
@@ -31,14 +31,24 @@ const Contests = () => {
       <Navbar />
       <div className="min-h-screen bg-white pt-24 px-6 md:px-20">
         {!isLoggedIn ? (
-          <h2 className="text-2xl font-bold text-gray mb-10 text-center">
+          <h2 className="text-2xl font-bold text-gray-700 mb-10 text-center">
             Please Sign In to View the Contests
           </h2>
         ) : (
           <>
-            <h1 className="text-4xl font-extrabold text-black mb-10 text-center">
-              Active Contests
-            </h1>
+            <div className="flex flex-col md:flex-row justify-between items-center mb-10 max-w-7xl mx-auto">
+              <h1 className="text-4xl font-extrabold text-black text-center md:text-left mb-4 md:mb-0">
+                Active Contests
+              </h1>
+              {user?.role === 'admin' && (
+                <Link
+                  to="/createContest"
+                  className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-md font-semibold transition shadow"
+                >
+                  Create Contest
+                </Link>
+              )}
+            </div>
 
             {loading && (
               <p className="text-center text-gray-500">Loading contests...</p>
