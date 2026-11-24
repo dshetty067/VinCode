@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -34,11 +33,83 @@ const CreateContest = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const formatFieldLabel = (key) => {
+    if (key === "bonusFromApp") return "Bonus from App";
+    if (key === "entryFee") return "Entry Fee";
+    return key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
+  };
+
+  // Validate contest fields
+  const validateContestData = () => {
+    for (const [key, value] of Object.entries(contestData)) {
+      const label = formatFieldLabel(key);
+      if (typeof value === "string") {
+        if (!value.trim()) {
+          alert(`Please fill in the "${label}" field.`);
+          return false;
+        }
+      } else if (value === "" || value === null || value === undefined || Number.isNaN(Number(value))) {
+        alert(`Please fill in the "${label}" field.`);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Validate all questions before completing
+  const validateQuestions = () => {
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      const qNum = i + 1;
+
+      if (!q.title.trim()) {
+        alert(`Please fill in the Title for Question ${qNum}.`);
+        return false;
+      }
+
+      if (!q.description.trim()) {
+        alert(`Please fill in the Description for Question ${qNum}.`);
+        return false;
+      }
+
+      if (!q.difficulty || !q.difficulty.trim()) {
+        alert(`Please select a Difficulty for Question ${qNum}.`);
+        return false;
+      }
+
+      for (let exIdx = 0; exIdx < q.examples.length; exIdx++) {
+        const ex = q.examples[exIdx];
+        if (!ex.input.trim()) {
+          alert(`Please fill in Input for Example ${exIdx + 1} in Question ${qNum}.`);
+          return false;
+        }
+        if (!ex.output.trim()) {
+          alert(`Please fill in Output for Example ${exIdx + 1} in Question ${qNum}.`);
+          return false;
+        }
+      }
+
+      for (let tcIdx = 0; tcIdx < q.testCases.length; tcIdx++) {
+        const tc = q.testCases[tcIdx];
+        if (!tc.input.trim()) {
+          alert(`Please fill in Input for Test Case ${tcIdx + 1} in Question ${qNum}.`);
+          return false;
+        }
+        if (!tc.expectedOutput.trim()) {
+          alert(`Please fill in Expected Output for Test Case ${tcIdx + 1} in Question ${qNum}.`);
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   // Handle contest form changes
   const handleContestChange = (e) => {
+    const { name, value, type } = e.target;
     setContestData({
       ...contestData,
-      [e.target.name]: e.target.value,
+      [name]: type === "number" ? (value === "" ? "" : Number(value)) : value,
     });
   };
 
@@ -75,6 +146,23 @@ const CreateContest = () => {
         difficulty: "easy",
       },
     ]);
+  };
+
+  // Delete a question with confirmation
+  const deleteQuestion = (qIndex) => {
+    if (questions.length <= 1) {
+      alert("At least one question is required.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete Question ${qIndex + 1}?`
+    );
+    if (!confirmed) return;
+
+    setQuestions((prevQuestions) =>
+      prevQuestions.filter((_, idx) => idx !== qIndex)
+    );
   };
 
   // Add example
@@ -119,6 +207,8 @@ const CreateContest = () => {
 
   // Step 1: Create contest
   const createContest = async () => {
+    if (!validateContestData()) return;
+
     try {
       setLoading(true);
       setMessage("");
@@ -138,9 +228,15 @@ const CreateContest = () => {
     }
   };
 
-  // Step 2: Submit all questions and redirect
+  // Step 2: Validate, confirm, submit all questions, and redirect
   const addQuestions = async () => {
     if (!contestId) return;
+    if (!validateQuestions()) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to complete and submit all questions for this contest?"
+    );
+    if (!confirmed) return;
 
     try {
       setLoading(true);
@@ -168,7 +264,6 @@ const CreateContest = () => {
       <Navbar />
 
       <div className="max-w-5xl mx-auto p-6 pt-24 min-h-screen bg-white">
-
         <h1 className="text-2xl font-bold mb-4 text-blue-700">
           Create Contest
         </h1>
@@ -181,11 +276,7 @@ const CreateContest = () => {
                 htmlFor={key}
                 className="mb-1 font-medium capitalize text-gray-700"
               >
-                {key === "bonusFromApp"
-                  ? "Bonus from App"
-                  : key === "entryFee"
-                  ? "Entry Fee"
-                  : key.replace(/([A-Z])/g, " $1")}
+                {formatFieldLabel(key)}
               </label>
 
               <input
@@ -200,7 +291,8 @@ const CreateContest = () => {
                 name={key}
                 value={value}
                 onChange={handleContestChange}
-                placeholder={key}
+                placeholder={formatFieldLabel(key)}
+                required
                 className="border p-2 rounded"
                 disabled={contestId !== null}
               />
@@ -232,9 +324,22 @@ const CreateContest = () => {
                 key={i}
                 className="border p-4 my-4 rounded-lg bg-white shadow"
               >
-                <h3 className="font-semibold text-lg mb-4 text-gray-800">
-                  Question {i + 1}
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-lg text-gray-800">
+                    Question {i + 1}
+                  </h3>
+
+                  {questions.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => deleteQuestion(i)}
+                      disabled={loading}
+                      className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                    >
+                      Delete Question
+                    </button>
+                  )}
+                </div>
 
                 <input
                   type="text"
@@ -242,6 +347,7 @@ const CreateContest = () => {
                   value={q.title}
                   onChange={(e) => handleQuestionChange(i, e)}
                   placeholder="Title"
+                  required
                   className="w-full mb-2 border p-2 rounded"
                 />
 
@@ -250,6 +356,7 @@ const CreateContest = () => {
                   value={q.description}
                   onChange={(e) => handleQuestionChange(i, e)}
                   placeholder="Description"
+                  required
                   className="w-full mb-4 border p-2 rounded"
                 />
 
@@ -257,6 +364,7 @@ const CreateContest = () => {
                   name="difficulty"
                   value={q.difficulty}
                   onChange={(e) => handleQuestionChange(i, e)}
+                  required
                   className="w-full mb-4 border p-2 rounded"
                 >
                   <option value="easy">Easy</option>
@@ -287,6 +395,7 @@ const CreateContest = () => {
                             e.target.value
                           )
                         }
+                        required
                         className="border p-2 rounded"
                       />
 
@@ -302,6 +411,7 @@ const CreateContest = () => {
                             e.target.value
                           )
                         }
+                        required
                         className="border p-2 rounded"
                       />
 
@@ -348,6 +458,7 @@ const CreateContest = () => {
                             e.target.value
                           )
                         }
+                        required
                         className="border p-2 rounded"
                       />
 
@@ -363,6 +474,7 @@ const CreateContest = () => {
                             e.target.value
                           )
                         }
+                        required
                         className="border p-2 rounded"
                       />
 
@@ -398,14 +510,14 @@ const CreateContest = () => {
               + Add Question
             </button>
 
-            {/* Submit Questions Button - Saves questions and redirects */}
+            {/* Complete Button - Validates, confirms, saves questions, and redirects */}
             <button
               onClick={addQuestions}
               type="button"
               disabled={loading}
               className="mt-6 px-4 py-2 bg-green-700 text-white rounded hover:bg-green-900 block disabled:opacity-50"
             >
-              {loading ? "Submitting..." : "Submit Questions"}
+              {loading ? "Completing..." : "Complete"}
             </button>
           </>
         )}

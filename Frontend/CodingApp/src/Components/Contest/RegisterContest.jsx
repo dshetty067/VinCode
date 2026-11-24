@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -65,7 +64,8 @@ const RegisterContest = () => {
       );
 
       if (response.data.success) {
-        const newBalance = response.data.newBalance;
+        const newBalance =
+          response.data.newBalance ?? walletBalance - contest.entryFee;
 
         setWalletBalance(newBalance);
 
@@ -77,7 +77,9 @@ const RegisterContest = () => {
           })
         );
 
-        alert("Successfully registered for the contest!");
+        alert(
+          `Successfully registered for the contest! ₹${contest.entryFee} deducted from your wallet. Remaining balance : ₹${newBalance}`
+        );
 
         navigate(`/contest/${id}`);
       }
@@ -113,7 +115,6 @@ const RegisterContest = () => {
       <Navbar />
 
       <div className="p-6 max-w-xl mx-auto mt-20 bg-white shadow rounded-lg text-center">
-
         <h2 className="text-2xl font-bold mb-4">
           Register for {contest.title}
         </h2>
@@ -143,17 +144,16 @@ const RegisterContest = () => {
             Insufficient wallet balance. Please top up your wallet.
           </p>
         )}
-
       </div>
 
-      <br />
-
-      <Link
-        to={`/contest/${id}`}
-        className="bg-blue-800 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-semibold"
-      >
-        Back
-      </Link>
+      <div className="max-w-xl mx-auto mt-4">
+        <Link
+          to={`/contest/${id}`}
+          className="inline-block bg-blue-800 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-semibold"
+        >
+          Back
+        </Link>
+      </div>
     </>
   );
 };

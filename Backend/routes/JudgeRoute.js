@@ -110,17 +110,24 @@ async function processContestCompletion(contestId) {
       }
     },
     {
+      $sort: { createdAt: 1 }
+    },
+    {
       $group: {
-        _id: { user: "$user", question: "$question" }
+        _id: { user: "$user", question: "$question" },
+        firstAcceptedAt: { $first: "$createdAt" }
       }
     },
     {
       $group: {
         _id: "$_id.user",
-        solvedCount: { $sum: 1 }
+        solvedCount: { $sum: 1 },
+        lastSolvedAt: { $max: "$firstAcceptedAt" }
       }
     },
-    { $sort: { solvedCount: -1 } },
+    {
+      $sort: { solvedCount: -1, lastSolvedAt: 1 }
+    },
     { $limit: 3 },
     {
       $lookup: {
@@ -137,7 +144,8 @@ async function processContestCompletion(contestId) {
         userId: "$userDetails._id",
         name: "$userDetails.name",
         email: "$userDetails.email",
-        solvedCount: 1
+        solvedCount: 1,
+        lastSolvedAt: 1
       }
     }
   ]);
@@ -167,7 +175,6 @@ async function processContestCompletion(contestId) {
     });
   }
 
-  // Mark contest as completed and assign 1st place winner if available
   contest.status = 'completed';
   if (updatedParticipants.length > 0) {
     contest.winner = updatedParticipants[0].userId;
@@ -193,17 +200,22 @@ router.get('/top-participants/:contestId', async (req, res) => {
         }
       },
       {
+        $sort: { createdAt: 1 }
+      },
+      {
         $group: {
-          _id: { user: "$user", question: "$question" }
+          _id: { user: "$user", question: "$question" },
+          firstAcceptedAt: { $first: "$createdAt" }
         }
       },
       {
         $group: {
           _id: "$_id.user",
-          solvedCount: { $sum: 1 }
+          solvedCount: { $sum: 1 },
+          lastSolvedAt: { $max: "$firstAcceptedAt" }
         }
       },
-      { $sort: { solvedCount: -1 } },
+      { $sort: { solvedCount: -1, lastSolvedAt: 1 } },
       { $limit: 3 },
       {
         $lookup: {
@@ -220,7 +232,8 @@ router.get('/top-participants/:contestId', async (req, res) => {
           userId: "$userDetails._id",
           name: "$userDetails.name",
           email: "$userDetails.email",
-          solvedCount: 1
+          solvedCount: 1,
+          lastSolvedAt: 1
         }
       }
     ]);

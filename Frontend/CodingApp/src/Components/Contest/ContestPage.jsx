@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -25,7 +24,7 @@ const ContestPage = () => {
         setIsRegistered(
           Array.isArray(res.data.contest.participants) &&
           res.data.contest.participants.some(
-            participant => participant._id.toString() === userId.toString()
+            (participant) => participant._id.toString() === userId.toString()
           )
         );
         console.log("Completed Users:", res.data.contest.completedUsers);
@@ -44,12 +43,12 @@ const ContestPage = () => {
   }, [id, userId]);
 
   useEffect(() => {
-  console.log('isRegistered changed:', isRegistered);
-}, [isRegistered]);
+    console.log("isRegistered changed:", isRegistered);
+  }, [isRegistered]);
 
- useEffect(() => {
-  console.log('hasCompleted changed:', hasCompleted);
-}, [hasCompleted]);
+  useEffect(() => {
+    console.log("hasCompleted changed:", hasCompleted);
+  }, [hasCompleted]);
 
   // Update current time every second
   useEffect(() => {
@@ -74,66 +73,92 @@ const ContestPage = () => {
   const hasEnded = now >= new Date(contest.endTime);
   const timeRemaining = getTimeRemaining();
 
-return (
-  <>
-    <Navbar />
-   
-    <div className="p-6 max-w-3xl mx-auto mt-20 bg-white shadow rounded-lg">
-      <h1 className="text-3xl font-bold text-blue-800 mb-4">{contest.title}</h1>
-      <p className="mb-4 text-gray-700">{contest.description}</p>
-      <ul className="space-y-2 text-gray-800">
-        <li><strong>Entry Fee:</strong> ₹{contest.entryFee}</li>
-        <li><strong>Start Time:</strong> {new Date(contest.startTime).toLocaleString()}</li>
-        <li><strong>End Time:</strong> {new Date(contest.endTime).toLocaleString()}</li>
-        <li><strong>Prize Pool:</strong> ₹{contest.prizePool}</li>
-        <li><strong>Bonus from App:</strong> ₹{contest.bonusFromApp}</li>
-        <li><strong>Max Participants:</strong> {contest.maxParticipants}</li>
-        <li><strong>Remaining Slots:</strong> {contest.remainingSlots}</li>
-        <li><strong>Status:</strong> {contest.status}</li>
-      </ul>
+  return (
+    <>
+      <Navbar />
 
-      {hasEnded ? (
-        <p className="mt-6 text-red-600 font-medium">This contest has ended.</p>
-      ) : hasCompleted ? (
-        <p className="mt-4 text-green-700 font-semibold">
-          You have already completed this contest.
-        </p>
-      ) : hasStarted ? (
-        isRegistered ? (
+      <div className="w-full px-4 sm:px-6 mt-20">
+        {/* Top-Left Back Button */}
+        <div className="mb-4">
           <button
-            onClick={() => navigate(`/contest/${id}/questions`)}
-            className="mt-4 bg-blue-800 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-semibold"
+            type="button"
+            onClick={() => navigate("/contests")}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold border border-gray-300 transition"
           >
-            View Questions
-          </button>
-        ) : (
-          <button
-            onClick={() => navigate(`/contests/${id}/register`)}
-            className="mt-4 bg-green-700 hover:bg-green-600 text-white px-6 py-2 rounded-md font-semibold"
-          >
-            Register for Contest
-          </button>
-        )
-      ) : (
-        <>
-          <p className="mt-6 text-orange-600 font-medium">
-            Starts in: {timeRemaining || "Starting soon..."}
-          </p>
-          {isRegistered ? (
-            <p className="text-green-600 font-medium">Already Registered</p>
-          ) : (
-            <button
-              onClick={() => navigate(`/contests/${id}/register`)}
-              className="mt-4 bg-green-700 hover:bg-green-600 text-white px-6 py-2 rounded-md font-semibold"
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
             >
-              Register for Contest
-            </button>
+              <path
+                fillRule="evenodd"
+                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Back
+          </button>
+        </div>
+
+        <div className="p-6 max-w-3xl mx-auto bg-white shadow rounded-lg">
+          <h1 className="text-3xl font-bold text-blue-800 mb-4">{contest.title}</h1>
+          <p className="mb-4 text-gray-700">{contest.description}</p>
+          <ul className="space-y-2 text-gray-800">
+            <li><strong>Entry Fee:</strong> ₹{contest.entryFee}</li>
+            <li><strong>Start Time:</strong> {new Date(contest.startTime).toLocaleString()}</li>
+            <li><strong>End Time:</strong> {new Date(contest.endTime).toLocaleString()}</li>
+            <li><strong>Prize Pool:</strong> ₹{contest.prizePool}</li>
+            <li><strong>Bonus from App:</strong> ₹{contest.bonusFromApp}</li>
+            <li><strong>Max Participants:</strong> {contest.maxParticipants}</li>
+            <li><strong>Remaining Slots:</strong> {contest.remainingSlots}</li>
+            <li><strong>Status:</strong> {contest.status}</li>
+          </ul>
+
+          {hasEnded ? (
+            <p className="mt-6 text-red-600 font-medium">This contest has ended.</p>
+          ) : hasCompleted ? (
+            <p className="mt-4 text-green-700 font-semibold">
+              You have already completed this contest.
+            </p>
+          ) : hasStarted ? (
+            isRegistered ? (
+              <button
+                onClick={() => navigate(`/contest/${id}/questions`)}
+                className="mt-4 bg-blue-800 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-semibold"
+              >
+                View Questions
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate(`/contests/${id}/register`)}
+                className="mt-4 bg-green-700 hover:bg-green-600 text-white px-6 py-2 rounded-md font-semibold"
+              >
+                Register for Contest
+              </button>
+            )
+          ) : (
+            <>
+              <p className="mt-6 text-orange-600 font-medium">
+                Starts in: {timeRemaining || "Starting soon..."}
+              </p>
+              {isRegistered ? (
+                <p className="text-green-600 font-medium">Already Registered</p>
+              ) : (
+                <button
+                  onClick={() => navigate(`/contests/${id}/register`)}
+                  className="mt-4 bg-green-700 hover:bg-green-600 text-white px-6 py-2 rounded-md font-semibold"
+                >
+                  Register for Contest
+                </button>
+              )}
+            </>
           )}
-        </>
-      )}
-    </div>
-  </>
-);
-}
+        </div>
+      </div>
+    </>
+  );
+};
 
 export default ContestPage;
