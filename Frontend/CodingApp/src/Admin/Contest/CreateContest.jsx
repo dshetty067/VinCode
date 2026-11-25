@@ -48,7 +48,12 @@ const CreateContest = () => {
           alert(`Please fill in the "${label}" field.`);
           return false;
         }
-      } else if (value === "" || value === null || value === undefined || Number.isNaN(Number(value))) {
+      } else if (
+        value === "" ||
+        value === null ||
+        value === undefined ||
+        Number.isNaN(Number(value))
+      ) {
         alert(`Please fill in the "${label}" field.`);
         return false;
       }
@@ -80,11 +85,15 @@ const CreateContest = () => {
       for (let exIdx = 0; exIdx < q.examples.length; exIdx++) {
         const ex = q.examples[exIdx];
         if (!ex.input.trim()) {
-          alert(`Please fill in Input for Example ${exIdx + 1} in Question ${qNum}.`);
+          alert(
+            `Please fill in Input for Example ${exIdx + 1} in Question ${qNum}.`
+          );
           return false;
         }
         if (!ex.output.trim()) {
-          alert(`Please fill in Output for Example ${exIdx + 1} in Question ${qNum}.`);
+          alert(
+            `Please fill in Output for Example ${exIdx + 1} in Question ${qNum}.`
+          );
           return false;
         }
       }
@@ -92,11 +101,15 @@ const CreateContest = () => {
       for (let tcIdx = 0; tcIdx < q.testCases.length; tcIdx++) {
         const tc = q.testCases[tcIdx];
         if (!tc.input.trim()) {
-          alert(`Please fill in Input for Test Case ${tcIdx + 1} in Question ${qNum}.`);
+          alert(
+            `Please fill in Input for Test Case ${tcIdx + 1} in Question ${qNum}.`
+          );
           return false;
         }
         if (!tc.expectedOutput.trim()) {
-          alert(`Please fill in Expected Output for Test Case ${tcIdx + 1} in Question ${qNum}.`);
+          alert(
+            `Please fill in Expected Output for Test Case ${tcIdx + 1} in Question ${qNum}.`
+          );
           return false;
         }
       }
@@ -263,270 +276,294 @@ const CreateContest = () => {
     <>
       <Navbar />
 
-      <div className="max-w-5xl mx-auto p-6 pt-24 min-h-screen bg-white">
-        <h1 className="text-2xl font-bold mb-4 text-blue-700">
-          Create Contest
-        </h1>
-
-        {/* Contest Form */}
-        <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg shadow">
-          {Object.entries(contestData).map(([key, value]) => (
-            <div key={key} className="flex flex-col">
-              <label
-                htmlFor={key}
-                className="mb-1 font-medium capitalize text-gray-700"
-              >
-                {formatFieldLabel(key)}
-              </label>
-
-              <input
-                id={key}
-                type={
-                  key.includes("Time")
-                    ? "datetime-local"
-                    : typeof value === "number"
-                    ? "number"
-                    : "text"
-                }
-                name={key}
-                value={value}
-                onChange={handleContestChange}
-                placeholder={formatFieldLabel(key)}
-                required
-                className="border p-2 rounded"
-                disabled={contestId !== null}
+      <div className="w-full px-4 sm:px-6 pt-24 min-h-screen bg-white">
+        {/* Top-Left Back Button */}
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold border border-gray-300 transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                clipRule="evenodd"
               />
-            </div>
-          ))}
+            </svg>
+            Back
+          </button>
         </div>
 
-        {/* Create Contest Button */}
-        {!contestId && (
-          <button
-            onClick={createContest}
-            type="button"
-            disabled={loading}
-            className="mt-4 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-900 disabled:opacity-50"
-          >
-            {loading ? "Creating Contest..." : "Create Contest"}
-          </button>
-        )}
+        <div className="max-w-5xl mx-auto pb-10">
+          <h1 className="text-2xl font-bold mb-4 text-blue-700">
+            Create Contest
+          </h1>
 
-        {/* Questions Form */}
-        {contestId && (
-          <>
-            <h2 className="text-xl font-semibold mt-6 text-blue-700">
-              Add Questions
-            </h2>
-
-            {questions.map((q, i) => (
-              <div
-                key={i}
-                className="border p-4 my-4 rounded-lg bg-white shadow"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-lg text-gray-800">
-                    Question {i + 1}
-                  </h3>
-
-                  {questions.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => deleteQuestion(i)}
-                      disabled={loading}
-                      className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-                    >
-                      Delete Question
-                    </button>
-                  )}
-                </div>
+          {/* Contest Form */}
+          <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg shadow">
+            {Object.entries(contestData).map(([key, value]) => (
+              <div key={key} className="flex flex-col">
+                <label
+                  htmlFor={key}
+                  className="mb-1 font-medium capitalize text-gray-700"
+                >
+                  {formatFieldLabel(key)}
+                </label>
 
                 <input
-                  type="text"
-                  name="title"
-                  value={q.title}
-                  onChange={(e) => handleQuestionChange(i, e)}
-                  placeholder="Title"
+                  id={key}
+                  type={
+                    key.includes("Time")
+                      ? "datetime-local"
+                      : typeof value === "number"
+                      ? "number"
+                      : "text"
+                  }
+                  name={key}
+                  value={value}
+                  onChange={handleContestChange}
+                  placeholder={formatFieldLabel(key)}
                   required
-                  className="w-full mb-2 border p-2 rounded"
+                  className="border p-2 rounded"
+                  disabled={contestId !== null}
                 />
-
-                <textarea
-                  name="description"
-                  value={q.description}
-                  onChange={(e) => handleQuestionChange(i, e)}
-                  placeholder="Description"
-                  required
-                  className="w-full mb-4 border p-2 rounded"
-                />
-
-                <select
-                  name="difficulty"
-                  value={q.difficulty}
-                  onChange={(e) => handleQuestionChange(i, e)}
-                  required
-                  className="w-full mb-4 border p-2 rounded"
-                >
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
-
-                {/* Examples */}
-                <div className="mb-4">
-                  <h4 className="font-medium text-gray-700 mb-2">
-                    Examples
-                  </h4>
-
-                  {q.examples.map((ex, exIdx) => (
-                    <div
-                      key={exIdx}
-                      className="mb-2 grid grid-cols-[1fr_1fr_auto] gap-2 items-center"
-                    >
-                      <input
-                        type="text"
-                        placeholder="Input"
-                        value={ex.input}
-                        onChange={(e) =>
-                          handleExampleChange(
-                            i,
-                            exIdx,
-                            "input",
-                            e.target.value
-                          )
-                        }
-                        required
-                        className="border p-2 rounded"
-                      />
-
-                      <input
-                        type="text"
-                        placeholder="Output"
-                        value={ex.output}
-                        onChange={(e) =>
-                          handleExampleChange(
-                            i,
-                            exIdx,
-                            "output",
-                            e.target.value
-                          )
-                        }
-                        required
-                        className="border p-2 rounded"
-                      />
-
-                      <button
-                        onClick={() => removeExample(i, exIdx)}
-                        className="text-red-600 font-bold text-lg"
-                        title="Remove example"
-                        type="button"
-                      >
-                        &times;
-                      </button>
-                    </div>
-                  ))}
-
-                  <button
-                    onClick={() => addExample(i)}
-                    className="mt-1 text-sm text-blue-600 hover:underline"
-                    type="button"
-                  >
-                    + Add Example
-                  </button>
-                </div>
-
-                {/* Test Cases */}
-                <div className="mb-4">
-                  <h4 className="font-medium text-gray-700 mb-2">
-                    Test Cases
-                  </h4>
-
-                  {q.testCases.map((tc, tcIdx) => (
-                    <div
-                      key={tcIdx}
-                      className="mb-2 grid grid-cols-[1fr_1fr_auto] gap-2 items-center"
-                    >
-                      <input
-                        type="text"
-                        placeholder="Input"
-                        value={tc.input}
-                        onChange={(e) =>
-                          handleTestCaseChange(
-                            i,
-                            tcIdx,
-                            "input",
-                            e.target.value
-                          )
-                        }
-                        required
-                        className="border p-2 rounded"
-                      />
-
-                      <input
-                        type="text"
-                        placeholder="Expected Output"
-                        value={tc.expectedOutput}
-                        onChange={(e) =>
-                          handleTestCaseChange(
-                            i,
-                            tcIdx,
-                            "expectedOutput",
-                            e.target.value
-                          )
-                        }
-                        required
-                        className="border p-2 rounded"
-                      />
-
-                      <button
-                        onClick={() => removeTestCase(i, tcIdx)}
-                        className="text-red-600 font-bold text-lg"
-                        title="Remove test case"
-                        type="button"
-                      >
-                        &times;
-                      </button>
-                    </div>
-                  ))}
-
-                  <button
-                    onClick={() => addTestCase(i)}
-                    className="mt-1 text-sm text-blue-600 hover:underline"
-                    type="button"
-                  >
-                    + Add Test Case
-                  </button>
-                </div>
               </div>
             ))}
+          </div>
 
-            {/* Add Question Button - ONLY adds a new question form */}
+          {/* Create Contest Button */}
+          {!contestId && (
             <button
-              onClick={addQuestion}
-              className="mt-2 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-800"
+              onClick={createContest}
               type="button"
               disabled={loading}
+              className="mt-4 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-900 disabled:opacity-50"
             >
-              + Add Question
+              {loading ? "Creating Contest..." : "Create Contest"}
             </button>
+          )}
 
-            {/* Complete Button - Validates, confirms, saves questions, and redirects */}
-            <button
-              onClick={addQuestions}
-              type="button"
-              disabled={loading}
-              className="mt-6 px-4 py-2 bg-green-700 text-white rounded hover:bg-green-900 block disabled:opacity-50"
-            >
-              {loading ? "Completing..." : "Complete"}
-            </button>
-          </>
-        )}
+          {/* Questions Form */}
+          {contestId && (
+            <>
+              <h2 className="text-xl font-semibold mt-6 text-blue-700">
+                Add Questions
+              </h2>
 
-        {message && (
-          <p className="mt-4 text-blue-600 font-medium">
-            {message}
-          </p>
-        )}
+              {questions.map((q, i) => (
+                <div
+                  key={i}
+                  className="border p-4 my-4 rounded-lg bg-white shadow"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-lg text-gray-800">
+                      Question {i + 1}
+                    </h3>
+
+                    {questions.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => deleteQuestion(i)}
+                        disabled={loading}
+                        className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                      >
+                        Delete Question
+                      </button>
+                    )}
+                  </div>
+
+                  <input
+                    type="text"
+                    name="title"
+                    value={q.title}
+                    onChange={(e) => handleQuestionChange(i, e)}
+                    placeholder="Title"
+                    required
+                    className="w-full mb-2 border p-2 rounded"
+                  />
+
+                  <textarea
+                    name="description"
+                    value={q.description}
+                    onChange={(e) => handleQuestionChange(i, e)}
+                    placeholder="Description"
+                    required
+                    className="w-full mb-4 border p-2 rounded"
+                  />
+
+                  <select
+                    name="difficulty"
+                    value={q.difficulty}
+                    onChange={(e) => handleQuestionChange(i, e)}
+                    required
+                    className="w-full mb-4 border p-2 rounded"
+                  >
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+
+                  {/* Examples */}
+                  <div className="mb-4">
+                    <h4 className="font-medium text-gray-700 mb-2">
+                      Examples
+                    </h4>
+
+                    {q.examples.map((ex, exIdx) => (
+                      <div
+                        key={exIdx}
+                        className="mb-2 grid grid-cols-[1fr_1fr_auto] gap-2 items-center"
+                      >
+                        <input
+                          type="text"
+                          placeholder="Input"
+                          value={ex.input}
+                          onChange={(e) =>
+                            handleExampleChange(
+                              i,
+                              exIdx,
+                              "input",
+                              e.target.value
+                            )
+                          }
+                          required
+                          className="border p-2 rounded"
+                        />
+
+                        <input
+                          type="text"
+                          placeholder="Output"
+                          value={ex.output}
+                          onChange={(e) =>
+                            handleExampleChange(
+                              i,
+                              exIdx,
+                              "output",
+                              e.target.value
+                            )
+                          }
+                          required
+                          className="border p-2 rounded"
+                        />
+
+                        <button
+                          onClick={() => removeExample(i, exIdx)}
+                          className="text-red-600 font-bold text-lg"
+                          title="Remove example"
+                          type="button"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+
+                    <button
+                      onClick={() => addExample(i)}
+                      className="mt-1 text-sm text-blue-600 hover:underline"
+                      type="button"
+                    >
+                      + Add Example
+                    </button>
+                  </div>
+
+                  {/* Test Cases */}
+                  <div className="mb-4">
+                    <h4 className="font-medium text-gray-700 mb-2">
+                      Test Cases
+                    </h4>
+
+                    {q.testCases.map((tc, tcIdx) => (
+                      <div
+                        key={tcIdx}
+                        className="mb-2 grid grid-cols-[1fr_1fr_auto] gap-2 items-center"
+                      >
+                        <input
+                          type="text"
+                          placeholder="Input"
+                          value={tc.input}
+                          onChange={(e) =>
+                            handleTestCaseChange(
+                              i,
+                              tcIdx,
+                              "input",
+                              e.target.value
+                            )
+                          }
+                          required
+                          className="border p-2 rounded"
+                        />
+
+                        <input
+                          type="text"
+                          placeholder="Expected Output"
+                          value={tc.expectedOutput}
+                          onChange={(e) =>
+                            handleTestCaseChange(
+                              i,
+                              tcIdx,
+                              "expectedOutput",
+                              e.target.value
+                            )
+                          }
+                          required
+                          className="border p-2 rounded"
+                        />
+
+                        <button
+                          onClick={() => removeTestCase(i, tcIdx)}
+                          className="text-red-600 font-bold text-lg"
+                          title="Remove test case"
+                          type="button"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+
+                    <button
+                      onClick={() => addTestCase(i)}
+                      className="mt-1 text-sm text-blue-600 hover:underline"
+                      type="button"
+                    >
+                      + Add Test Case
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {/* Add Question Button - ONLY adds a new question form */}
+              <button
+                onClick={addQuestion}
+                className="mt-2 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-800"
+                type="button"
+                disabled={loading}
+              >
+                + Add Question
+              </button>
+
+              {/* Complete Button - Validates, confirms, saves questions, and redirects */}
+              <button
+                onClick={addQuestions}
+                type="button"
+                disabled={loading}
+                className="mt-6 px-4 py-2 bg-green-700 text-white rounded hover:bg-green-900 block disabled:opacity-50"
+              >
+                {loading ? "Completing..." : "Complete"}
+              </button>
+            </>
+          )}
+
+          {message && (
+            <p className="mt-4 text-blue-600 font-medium">{message}</p>
+          )}
+        </div>
       </div>
 
       <Footer />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar"; 
+import Navbar from "./Navbar"; 
 import Footer from "./Footer";
 import { useAuth } from "../AuthContext";
 
@@ -133,7 +133,7 @@ const Profile = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* Left column - User info + buttons + update form */}
           <div className="border p-6 rounded shadow-md">
-            <h2 className="text-2xl font-semibold mb-4">User Information</h2>
+            <h2 className="text-2xl font-semibold mb-4">Hello, {userInfo.name}!</h2>
             {!updateMode ? (
               <>
                 <p>
